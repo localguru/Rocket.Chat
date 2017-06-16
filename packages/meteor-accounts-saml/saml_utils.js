@@ -357,7 +357,7 @@ SAML.prototype.validateResponse = function(samlResponse, relayState, callback) {
 			if (subject) {
 				const nameID = self.getElement(subject[0], 'NameID');
 				if (nameID) {
-					profile.nameID = nameID[0]._;
+					profile.nameID = nameID[0]._.replace(/@.+$/, '');
 
 					if (nameID[0].$.Format) {
 						profile.nameIDFormat = nameID[0].$.Format;
@@ -406,6 +406,14 @@ SAML.prototype.validateResponse = function(samlResponse, relayState, callback) {
 				if (!profile.email && profile.mail) {
 					profile.email = profile.mail;
 				}
+				
+				if (!profile.displayName && profile['urn:oid:2.16.840.1.113730.3.1.241']) {     
+					profile.displayName = profile['urn:oid:2.16.840.1.113730.3.1.241'];
+				}
+
+				if (!profile.realname && profile.displayName) {                                 
+					profile.realname = profile.displayName;                                 
+				} 
 			}
 
 			if (!profile.email && profile.nameID && profile.nameIDFormat && profile.nameIDFormat.indexOf('emailAddress') >= 0) {
@@ -432,11 +440,48 @@ SAML.prototype.validateResponse = function(samlResponse, relayState, callback) {
 let decryptionCert;
 SAML.prototype.generateServiceProviderMetadata = function(callbackUrl) {
 
-	let keyDescriptor = null;
-
 	if (!decryptionCert) {
 		decryptionCert = this.options.privateCert;
 	}
+
+	if (!this.options.callbackUrl && !callbackUrl) {
+		throw new Error(
+			'Unable to generate service provider metadata when callbackUrl option is not set');
+	}
+
+	const metadata = {
+		'EntityDescriptor': {
+			'@xmlns': 'urn:oasis:names:tc:SAML:2.0:metadata',
+			'@xmlns:ds': 'http://www.w3.org/2000/09/xmldsig#',
+			'@xmlns:mdui': 'urn:oasis:names:tc:SAML:metadata:ui',
+			'@entityID': this.options.issuer,
+			'SPSSODescriptor': {
+				'@protocolSupportEnumeration': 'urn:oasis:names:tc:SAML:2.0:protocol',
+                                'Extensions': {
+                                  'mdui:UIInfo':
+                                    [
+                                      { 'mdui:DisplayName': { "@xml:lang": "de", "#text": "TeamChat" } },
+                                      { 'mdui:DisplayName': { "@xml:lang": "en", "#text": "TeamChat" } },
+                                      { 'mdui:Description': { "@xml:lang": "de", "#text": "Eine Plattform für alle MitarbeiterInnen der Universität, die eine einfache, persistente Kommunikation mit Kollegen ermöglicht - sowohl in Einzel - als auch in Gruppenunterhaltungen." } },
+                                      { 'mdui:Description': { "@xml:lang": "en", "#text": "A Web Chat Server for team communication." } },
+                                      { 'mdui:Logo': { '@height': '85', '@width': '436', '#text': 'https://teamchat.uni-bielefeld.de/html/images/logo_teamchat_gruen.svg' } },
+                                    ]
+                                },
+				'SingleLogoutService': {
+					'@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
+					'@Location': `${ Meteor.absoluteUrl() }_saml/logout/${ this.options.provider }/`,
+					'@ResponseLocation': `${ Meteor.absoluteUrl() }_saml/logout/${ this.options.provider }/`
+				},
+				'NameIDFormat': this.options.identifierFormat,
+				'AssertionConsumerService': {
+					'@index': '1',
+					'@isDefault': 'true',
+					'@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
+					'@Location': callbackUrl
+				}
+			}
+		}
+	};
 
 	if (this.options.privateKey) {
 		if (!decryptionCert) {
@@ -448,7 +493,7 @@ SAML.prototype.generateServiceProviderMetadata = function(callbackUrl) {
 		decryptionCert = decryptionCert.replace(/-+END CERTIFICATE-+\r?\n?/, '');
 		decryptionCert = decryptionCert.replace(/\r\n/g, '\n');
 
-		keyDescriptor = {
+		metadata['EntityDescriptor']['SPSSODescriptor']['KeyDescriptor'] = {
 			'ds:KeyInfo': {
 				'ds:X509Data': {
 					'ds:X509Certificate': {
@@ -476,35 +521,6 @@ SAML.prototype.generateServiceProviderMetadata = function(callbackUrl) {
 			]
 		};
 	}
-
-	if (!this.options.callbackUrl && !callbackUrl) {
-		throw new Error(
-			'Unable to generate service provider metadata when callbackUrl option is not set');
-	}
-
-	const metadata = {
-		'EntityDescriptor': {
-			'@xmlns': 'urn:oasis:names:tc:SAML:2.0:metadata',
-			'@xmlns:ds': 'http://www.w3.org/2000/09/xmldsig#',
-			'@entityID': this.options.issuer,
-			'SPSSODescriptor': {
-				'@protocolSupportEnumeration': 'urn:oasis:names:tc:SAML:2.0:protocol',
-				'KeyDescriptor': keyDescriptor,
-				'SingleLogoutService': {
-					'@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
-					'@Location': `${ Meteor.absoluteUrl() }_saml/logout/${ this.options.provider }/`,
-					'@ResponseLocation': `${ Meteor.absoluteUrl() }_saml/logout/${ this.options.provider }/`
-				},
-				'NameIDFormat': this.options.identifierFormat,
-				'AssertionConsumerService': {
-					'@index': '1',
-					'@isDefault': 'true',
-					'@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST',
-					'@Location': callbackUrl
-				}
-			}
-		}
-	};
 
 	return xmlbuilder.create(metadata).end({
 		pretty: true,
