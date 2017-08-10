@@ -26,7 +26,6 @@ RocketChat.getFullUserData = function({userId, filter, limit}) {
 			customFields: 1
 		});
 		
-
 		if (RocketChat.authz.hasPermission(userId, 'assign-admin-role')) {
                 	fields = _.extend(fields, { 
                 		createdAt: 1,
