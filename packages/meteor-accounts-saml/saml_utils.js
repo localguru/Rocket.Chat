@@ -464,6 +464,10 @@ SAML.prototype.generateServiceProviderMetadata = function(callbackUrl) {
                                       { 'mdui:DisplayName': { "@xml:lang": "en", "#text": "TeamChat" } },
                                       { 'mdui:Description': { "@xml:lang": "de", "#text": "Eine Plattform für alle MitarbeiterInnen der Universität, die eine einfache, persistente Kommunikation mit Kollegen ermöglicht - sowohl in Einzel - als auch in Gruppenunterhaltungen." } },
                                       { 'mdui:Description': { "@xml:lang": "en", "#text": "A Web Chat Server for team communication." } },
+                                      { 'mdui:InformationURL': { "@xml:lang": "de", "#text": "https://teamchat.uni-bielefeld.de/terms-of-service" } },
+                                      { 'mdui:InformationURL': { "@xml:lang": "en", "#text": "https://teamchat.uni-bielefeld.de/terms-of-service" } },
+                                      { 'mdui:PrivacyStatementURL': { "@xml:lang": "de", "#text": "https://teamchat.uni-bielefeld.de/privacy-policy" } },
+                                      { 'mdui:PrivacyStatementURL': { "@xml:lang": "en", "#text": "https://teamchat.uni-bielefeld.de/privacy-policy" } },
                                       { 'mdui:Logo': { '@height': '85', '@width': '436', '#text': 'https://teamchat.uni-bielefeld.de/html/images/logo_teamchat_gruen.svg' } },
                                     ]
                                 },
