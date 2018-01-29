@@ -103,15 +103,13 @@ Accounts.registerLoginHandler(function(loginRequest) {
 	}
 
 	if (loginResult && loginResult.profile && loginResult.profile.email) {
-		const email = RegExp.escape(loginResult.profile.email);
-		const emailRegex = new RegExp(`^${ email }$`, 'i');
 		let user = Meteor.users.findOne({
-			'emails.address': emailRegex
+			'username': loginResult.profile.nameID
 		});
 
 		if (!user) {
 			const newUser = {
-				name: loginResult.profile.cn || loginResult.profile.username,
+				name: loginResult.profile.realname || loginResult.profile.username,
 				active: true,
 				globalRoles: ['user'],
 				emails: [{
@@ -121,10 +119,7 @@ Accounts.registerLoginHandler(function(loginRequest) {
 			};
 
 			if (Accounts.saml.settings.generateUsername === true) {
-				const username = RocketChat.generateUsernameSuggestion(newUser);
-				if (username) {
-					newUser.username = username;
-				}
+				newUser.username = loginResult.profile.nameID;
 			} else if (loginResult.profile.username) {
 				newUser.username = loginResult.profile.username;
 			}
