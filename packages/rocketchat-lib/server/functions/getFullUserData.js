@@ -17,8 +17,8 @@ const fullFields = {
 	emails: 1,
 	phone: 1,
 	statusConnection: 1,
-	createdAt: 1,
-	lastLogin: 1,
+	// createdAt: 1,
+	// lastLogin: 1,
 	services: 1,
 	requirePasswordChange: 1,
 	requirePasswordChangeReason: 1,
@@ -63,7 +63,14 @@ RocketChat.getFullUserData = function({ userId, filter, limit: l }) {
 
 	const _customFields = isMyOwnInfo || viewFullOtherUserInfo ? customFields : publicCustomFields;
 
-	const fields = viewFullOtherUserInfo ? { ...defaultFields, ...fullFields, ..._customFields } : { ...defaultFields, ..._customFields };
+	let fields = viewFullOtherUserInfo ? { ...defaultFields, ...fullFields, ..._customFields } : { ...defaultFields, ..._customFields };
+
+	if (RocketChat.authz.hasPermission(userId, 'assign-admin-role')) {
+               	fields = _.extend(fields, { 
+               		createdAt: 1,
+			lastLogin: 1
+		});
+	};	
 
 	const options = {
 		fields,
