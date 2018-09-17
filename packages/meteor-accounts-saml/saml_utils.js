@@ -363,6 +363,14 @@ SAML.prototype.mapAttributes = function(attributeStatement, profile) {
 	if (!profile.email && profile.mail) {
 		profile.email = profile.mail;
 	}
+	
+	if (!profile.displayName && profile['urn:oid:2.16.840.1.113730.3.1.241']) {     
+		profile.displayName = profile['urn:oid:2.16.840.1.113730.3.1.241'];
+	}
+				
+	if (!profile.realname && profile.displayName) {                                 
+		profile.realname = profile.displayName;                                 
+	}
 };
 
 SAML.prototype.validateResponse = function(samlResponse, relayState, callback) {
@@ -413,7 +421,8 @@ SAML.prototype.validateResponse = function(samlResponse, relayState, callback) {
 				if (subject) {
 					const nameID = subject.getElementsByTagNameNS('urn:oasis:names:tc:SAML:2.0:assertion', 'NameID')[0];
 					if (nameID) {
-						profile.nameID = nameID.textContent;
+						// profile.nameID = nameID.textContent;
+						profile.nameID = nameID.textContent.replace(/@.+$/, '');
 
 						if (nameID.hasAttribute('Format')) {
 							profile.nameIDFormat = nameID.getAttribute('Format');
@@ -489,9 +498,24 @@ SAML.prototype.generateServiceProviderMetadata = function(callbackUrl) {
 		EntityDescriptor: {
 			'@xmlns': 'urn:oasis:names:tc:SAML:2.0:metadata',
 			'@xmlns:ds': 'http://www.w3.org/2000/09/xmldsig#',
+			'@xmlns:mdui': 'urn:oasis:names:tc:SAML:metadata:ui',
 			'@entityID': this.options.issuer,
 			SPSSODescriptor: {
 				'@protocolSupportEnumeration': 'urn:oasis:names:tc:SAML:2.0:protocol',
+				'Extensions': {
+                                  'mdui:UIInfo':
+                                    [
+                                      { 'mdui:DisplayName': { "@xml:lang": "de", "#text": "TeamChat" } },
+                                      { 'mdui:DisplayName': { "@xml:lang": "en", "#text": "TeamChat" } },
+                                      { 'mdui:Description': { "@xml:lang": "de", "#text": "Eine Plattform für alle MitarbeiterInnen der Universität, die eine einfache, persistente Kommunikation mit Kollegen ermöglicht - sowohl in Einzel - als auch in Gruppenunterhaltungen." } },
+                                      { 'mdui:Description': { "@xml:lang": "en", "#text": "A Web Chat Server for team communication." } },
+                                      { 'mdui:InformationURL': { "@xml:lang": "de", "#text": "https://teamchat.uni-bielefeld.de/terms-of-service" } },
+                                      { 'mdui:InformationURL': { "@xml:lang": "en", "#text": "https://teamchat.uni-bielefeld.de/terms-of-service" } },
+                                      { 'mdui:PrivacyStatementURL': { "@xml:lang": "de", "#text": "https://teamchat.uni-bielefeld.de/privacy-policy" } },
+                                      { 'mdui:PrivacyStatementURL': { "@xml:lang": "en", "#text": "https://teamchat.uni-bielefeld.de/privacy-policy" } },
+                                      { 'mdui:Logo': { '@height': '85', '@width': '436', '#text': 'https://teamchat.uni-bielefeld.de/html/images/logo_teamchat_gruen.svg' } },
+                                    ]
+                                },
 				SingleLogoutService: {
 					'@Binding': 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect',
 					'@Location': `${ Meteor.absoluteUrl() }_saml/logout/${ this.options.provider }/`,
