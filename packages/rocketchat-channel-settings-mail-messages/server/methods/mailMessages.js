@@ -53,13 +53,13 @@ Meteor.methods({
 		const user = Meteor.user();
 		const email = user.emails && user.emails[0] && user.emails[0].address;
 		data.language = data.language.split('-').shift().toLowerCase();
-		if (data.language !== 'en') {
-			const localeFn = Meteor.call('loadLocale', data.language);
-			if (localeFn) {
-				Function(localeFn).call({ moment });
-				moment.locale(data.language);
-			}
-		}
+		// if (data.language !== 'en') {
+		//	const localeFn = Meteor.call('loadLocale', data.language);
+		//	if (localeFn) {
+		//		Function(localeFn).call({ moment });
+		//		moment.locale(data.language);
+		//	}
+		// }
 
 		const header = RocketChat.placeholders.replace(RocketChat.settings.get('Email_Header') || '');
 		const footer = RocketChat.placeholders.replace(RocketChat.settings.get('Email_Footer') || '');
