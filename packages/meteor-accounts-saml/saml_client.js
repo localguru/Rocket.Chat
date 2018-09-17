@@ -86,7 +86,7 @@ const openCenteredPopup = function(url, width, height) {
 Accounts.saml.initiateLogin = function(options, callback, dimensions) {
 	// default dimensions that worked well for facebook and google
 	const popup = openCenteredPopup(
-		Meteor.absoluteUrl(`_saml/authorize/${ options.provider }/${ options.credentialToken }`), (dimensions && dimensions.width) || 650, (dimensions && dimensions.height) || 500);
+		Meteor.absoluteUrl(`_saml/authorize/${ options.provider }/${ options.credentialToken }`), (dimensions && dimensions.width) || 970, (dimensions && dimensions.height) || 730);
 
 	const checkPopupOpen = setInterval(function() {
 		let popupClosed;
