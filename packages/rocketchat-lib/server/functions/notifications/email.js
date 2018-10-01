@@ -120,12 +120,17 @@ export function sendEmail({ message, user, subscription, room, emailAddress, has
 		subject: emailSubject,
 		html: contentHeader + content + divisorMessage + link + contentFooter,
 	};
+	
+	const sender = RocketChat.models.Users.findOne({ _id: message.u._id });
+        // console.log(sender.emails[0].address);
 
 	// using user full-name/channel name in from address
 	if (room.t === 'd') {
-		email.from = `${ String(message.u.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ RocketChat.settings.get('From_Email') }>`;
+		// email.from = `${ String(message.u.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ RocketChat.settings.get('From_Email') }>`;
+		email.from = `${ String(message.u.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ sender.emails[0].address }>`;
 	} else {
-		email.from = `${ String(room.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ RocketChat.settings.get('From_Email') }>`;
+		// email.from = `${ String(room.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ RocketChat.settings.get('From_Email') }>`;
+		email.from = `${ String(message.u.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ sender.emails[0].address }>`;
 	}
 	// If direct reply enabled, email content with headers
 	if (RocketChat.settings.get('Direct_Reply_Enable')) {
