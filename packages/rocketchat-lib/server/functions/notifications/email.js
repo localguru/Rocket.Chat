@@ -121,8 +121,14 @@ export function sendEmail({ message, user, subscription, room, emailAddress, has
 		html: contentHeader + content + divisorMessage + link + contentFooter,
 	};
 	
-	const sender = RocketChat.models.Users.findOne({ _id: message.u._id });
+        // TeamChat
+        const sender = RocketChat.models.Users.findOne({ _id: message.u._id });
         // console.log(sender.emails[0].address);
+
+        const recipient = RocketChat.models.Users.findOneByEmailAddress(emailAddress);
+        email.to = `${ recipient.name } <${ emailAddress}>`;
+        // console.log(recipient.name);
+        // console.log(email)
 
 	// using user full-name/channel name in from address
 	if (room.t === 'd') {
