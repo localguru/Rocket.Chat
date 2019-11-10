@@ -22,8 +22,8 @@ const fullFields = {
 	emails: 1,
 	phone: 1,
 	statusConnection: 1,
-	createdAt: 1,
-	lastLogin: 1,
+	// createdAt: 1,
+	// lastLogin: 1,
 	services: 1,
 	requirePasswordChange: 1,
 	requirePasswordChangeReason: 1,
@@ -71,9 +71,17 @@ export const getFullUserData = function({ userId, filter, limit: l }) {
 		? customFields
 		: publicCustomFields;
 
-	const fields = isMyOwnInfo || viewFullOtherUserInfo
+	let fields = isMyOwnInfo || viewFullOtherUserInfo
 		? { ...defaultFields, ...fullFields, ..._customFields }
 		: { ...defaultFields, ..._customFields };
+		
+	
+	if (hasPermission(userId, 'assign-admin-role')) {
+               	fields = _.extend(fields, { 
+               		createdAt: 1,
+			lastLogin: 1
+		});
+	};
 
 	const options = {
 		fields,
