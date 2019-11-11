@@ -126,20 +126,20 @@ export function sendEmail({ message, user, subscription, room, emailAddress, has
 		},
 	};
 
-        // TeamChat
+        // mail from and mail to fix
         const sender = Users.findOne({ _id: message.u._id });
-        console.log(sender.emails[0].address);
+        // console.log(sender.emails[0].address);
 
         const recipient = Users.findOneByEmailAddress(emailAddress);
         email.to = `${ recipient.name } <${ emailAddress}>`;
-        console.log(recipient.name);
-        console.log(email)
+        // console.log(recipient.name);
+        // console.log(email)
 
 
         email.from = `${ String(username).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ settings.get('From_Email') }>`;
 
         if (sender.emails[0].address && sender.emails[0].address.length !== 0) {
-		email.from = `${ String(message.u.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ sender.emails[0].address }>`;
+		email.from = `${ String(sender.name).replace(/@/g, '%40').replace(/[<>,]/g, '') } <${ sender.emails[0].address }>`;
 	};
 	
 	
