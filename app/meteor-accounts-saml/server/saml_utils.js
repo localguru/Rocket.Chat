@@ -50,6 +50,8 @@ SAML.prototype.initialize = function(options) {
 		options.authnContext = 'urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport';
 	}
 
+	options.allowedClockDrift = parseInt(options.allowedClockDrift) || 0;
+
 	return options;
 };
 
@@ -463,13 +465,17 @@ SAML.prototype.mapAttributes = function(attributeStatement, profile) {
 };
 
 SAML.prototype.validateNotBeforeNotOnOrAfterAssertions = function(element) {
-	const now = new Date();
+	const sysnow = new Date();
+	const allowedclockdrift = this.options.allowedClockDrift;
+
+	const now = new Date(sysnow.getTime() + allowedclockdrift);
 
 	if (element.hasAttribute('NotBefore')) {
 		const notBefore = element.getAttribute('NotBefore');
 
 		const date = new Date(notBefore);
 		if (now < date) {
+			console.log("Error: now", now, "< notBefore", notBefore, ", allowedclockdrift", allowedclockdrift, ", system clock", sysnow);
 			return false;
 		}
 	}
@@ -477,7 +483,7 @@ SAML.prototype.validateNotBeforeNotOnOrAfterAssertions = function(element) {
 	if (element.hasAttribute('NotOnOrAfter')) {
 		const notOnOrAfter = element.getAttribute('NotOnOrAfter');
 		const date = new Date(notOnOrAfter);
-
+		
 		if (now >= date) {
 			return false;
 		}
